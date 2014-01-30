@@ -8,4 +8,4 @@ Slides, notes and code from presentations
 
 	Source written in Emacs Org-Mode and Rendered with https://github.com/yjwen/org-reveal
 
-	View Prsentation: http://hhutch.github.io/presentations/
+	View Presentation: http://hhutch.github.io/presentations/
