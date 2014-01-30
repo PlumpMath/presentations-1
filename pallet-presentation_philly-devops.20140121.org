@@ -1,0 +1,628 @@
+#+TITLE: Pallet: Abstract all the things
+#+Author: Hunter Hutchinson
+#+OPTIONS: toc:nil
+#+OPTIONS: num:0
+
+* The 10,000 foot view
+  :PROPERTIES:
+  :reveal_background: ./images/ten_thousand_feet_nyc.jpg
+  :reveal_background_trans: slide
+  :END:
+** The 10,000 foot view
+  :PROPERTIES:
+  :reveal_background: ./images/ten_thousand_feet_nyc.jpg
+  :reveal_background_trans: slide
+  :reveal_data_state: blackout
+  :END:
+   Why I chose Pallet:
+   #+ATTR_REVEAL: :frag roll-in
+   - "full stack developer"
+   #+ATTR_REVEAL: :frag roll-in
+   - in 2010, I had some Clojure experience & no Ruby experience
+   #+ATTR_REVEAL: :frag roll-in
+   - in 2010, JClouds was arguably the most mature and robust cross-provider library for accessing commercial Virtual Containers, i.e. AWS & Rackspace
+** Pallet:
+  :PROPERTIES:
+  :reveal_background: ./images/ten_thousand_feet_nyc.jpg
+  :reveal_background_trans: slide
+  :reveal_data_state: blackout
+  :END:
+  #+ATTR_REVEAL: :frag roll-in
+  * Clojure DSL
+  #+ATTR_REVEAL: :frag roll-in
+  * JClouds for accessing most commercial Virtual Container providers
+  #+ATTR_REVEAL: :frag roll-in
+  * No central Server
+  #+ATTR_REVEAL: :frag roll-in
+  * Default Transport: SSH/SFTP
+  #+ATTR_REVEAL: :frag roll-in
+  * Default Client Target: Bourne Shell
+  #+ATTR_REVEAL: :frag roll-in
+  * No client dependencies other than SSH/SFTP and Bourne Shell
+    
+* 5 minutes with Clojure
+  :PROPERTIES:
+  :reveal_background_size: 300px
+  :reveal_data_state: blackout
+  :reveal_background: ./images/clojure_logo.png
+  :reveal_background_trans: slide
+  :END:
+  Goal: Understand this
+  #+BEGIN_SRC clojure
+    (let [to-radians #(Math/toRadians %)]
+      (->> (range)
+           (take 100)
+           (filter odd?)
+           (map to-radians)))
+  #+END_SRC
+** What?!
+  :PROPERTIES:
+  :reveal_background_size: 300px
+  :reveal_data_state: blackout
+  :reveal_background: ./images/clojure_logo.png
+  :reveal_background_trans: slide
+  :END:
+   - a functional LISP
+   - a Hosted Language (JVM, CLR, Javascript, Scheme, more to come)
+   - immutable by default
+   - STM (software transactional memory), strong on concurrency
+   - lazy collections
+** Basic Data types
+  :PROPERTIES:
+  :reveal_background_size: 300px
+  :reveal_data_state: blackout
+  :reveal_background: ./images/clojure_logo.png
+  :reveal_background_trans: slide
+  :END:
+   - Vars: =(def x 'foo)=
+   - Symbols:
+     #+BEGIN_SRC clojure
+            (symbol foo)
+     #+END_SRC
+     #+BEGIN_SRC clojure
+       'foo
+     #+END_SRC
+   - Keywords: 
+     #+BEGIN_SRC clojure
+            :foo
+     #+END_SRC
+   - Chars, Strings, Numbers, Rationals:
+     #+BEGIN_SRC clojure
+            [\x "foo" 33.3 33/1000]
+     #+END_SRC
+     
+** Collection types
+  :PROPERTIES:
+  :reveal_background_size: 300px
+  :reveal_data_state: blackout
+  :reveal_background: ./images/clojure_logo.png
+  :reveal_background_trans: slide
+  :END:
+   All of these are of the =Seq= type
+   - Vector: =[1 3 9 5]=
+     #+BEGIN_SRC clojure
+       (def x (vector 1 3 9 8 5))
+     #+END_SRC
+   - Map: ={:a "b" :c "d"}=
+     #+BEGIN_SRC clojure
+            (def x (hash-map :a "b"
+                             :c "d"))
+     #+END_SRC
+   - List: =('a 'b 'c 'd)=
+     #+BEGIN_SRC clojure
+            (def x (list 'a 'b 'c 'd))
+     #+END_SRC
+
+*** Because these collections are all =SEQ= type
+  :PROPERTIES:
+  :reveal_background_size: 300px
+  :reveal_data_state: blackout
+  :reveal_background: ./images/clojure_logo.png
+  :reveal_background_trans: slide
+  :END:
+    they share a uniform behavior for these primitives
+    - =first=
+    - =rest=
+
+    AND for these primitive collection functions
+    - =map=
+    - =filter=
+    - =loop= and =recur=
+    - =doseq=
+
+    And more
+      
+** Functions
+   First Class all the way baby
+  :PROPERTIES:
+  :reveal_background_size: 300px
+  :reveal_data_state: blackout
+  :reveal_background: ./images/clojure_logo.png
+  :reveal_background_trans: slide
+  :END:
+   #+BEGIN_SRC clojure
+     (fn [x] (* x x))
+   #+END_SRC
+   #+BEGIN_SRC clojure
+     (def square-it (fn [x] (* x x)))
+   #+END_SRC
+   #+BEGIN_SRC clojure
+     (defn square-it [x] (* x x))
+   #+END_SRC
+   #+BEGIN_SRC clojure
+     (def square-it #(* % %))
+   #+END_SRC
+
+** Lexical Scoping
+  :PROPERTIES:
+  :reveal_background_size: 300px
+  :reveal_data_state: blackout
+  :reveal_background: ./images/clojure_logo.png
+  :reveal_background_trans: slide
+  :END:
+   Clojure like other Lisps has strong lexical scoping, the main ways to achieve this are:
+   #+ATTR_REVEAL: :frag roll-in
+   function scope
+   #+ATTR_REVEAL: :frag roll-in
+   #+BEGIN_SRC clojure
+     (def x 'foo)
+     (defn yo [j]
+       (def x 'bar)
+       (apply str (interpose ", " (list j x))))
+   #+END_SRC
+   #+ATTR_REVEAL: :frag roll-in
+   Let Binding
+   #+ATTR_REVEAL: :frag roll-in
+   #+BEGIN_SRC clojure
+     (def a "your momma")
+     (def is " is so ...")
+     (let [is " is a really nice lady"]
+       (str a is))
+   #+END_SRC
+
+** Destructuring
+  :PROPERTIES:
+  :reveal_background_size: 300px
+  :reveal_data_state: blackout
+  :reveal_background: ./images/clojure_logo.png
+  :reveal_background_trans: slide
+  :END:
+   Clojure supports abstract structural binding, often called destructuring, in let binding lists, fn parameter lists, and any macro that expands into a let or fn. -- http://clojure.org/special_forms
+   #+ATTR_REVEAL: :frag roll-in
+   #+BEGIN_SRC clojure
+     (def point [9 8])
+     ;; destructure a vector into named local vars
+     (let [[x y] point]
+       (format "x: %d by y: %d on the cartesian plane" x y))
+   #+END_SRC
+
+   #+ATTR_REVEAL: :frag roll-in
+   #+BEGIN_SRC clojure
+     (def nums [1 2 3 4])
+     ;; destructure a vector into first element and the rest, in a list
+     (let [[f & more] nums]
+       (str f " and more: " more))
+   #+END_SRC
+
+** Destructuring Continued
+  :PROPERTIES:
+  :reveal_background_size: 300px
+  :reveal_data_state: blackout
+  :reveal_background: ./images/clojure_logo.png
+  :reveal_background_trans: slide
+  :END:
+   #+BEGIN_SRC clojure
+     (def point {:x 5 :y 7})
+     ;; basic Map destructuring
+     (let [{x :x y :y} point]
+       (str "x:" x "y:" y))
+     
+   #+END_SRC
+
+   #+ATTR_REVEAL: :frag roll-in
+   #+BEGIN_SRC clojure
+     (def point {:x 5 :y 7})
+     ;; idiomatic map destructuring
+     (let [{:keys [x y]} point]
+       (str "x:" x "y:" y))
+     
+   #+END_SRC
+
+** Name your spaces
+  :PROPERTIES:
+  :reveal_background_size: 300px
+  :reveal_data_state: blackout
+  :reveal_background: ./images/clojure_logo.png
+  :reveal_background_trans: slide
+  :END:
+   Namespaces are used for structuring your code base, they allow you to reference statements outside of your current scope
+   #+BEGIN_SRC clojure
+     (ns my-one)
+     (def xo "no")
+     
+     (ns my-two)
+     (def yo my-one/xo)
+   #+END_SRC
+** Macros are Magic
+  :PROPERTIES:
+  :reveal_background_size: 300px
+  :reveal_data_state: blackout
+  :reveal_background: ./images/clojure_logo.png
+  :reveal_background_trans: slide
+  :END:
+   I am not going to cover them other than to say:
+   #+ATTR_REVEAL: :frag roll-in
+   Macros are code which generates code
+   #+ATTR_REVEAL: :frag roll-in
+   #+BEGIN_SRC clojure
+        (defmacro def-function [& args] `(defn ~@args))
+   #+END_SRC
+   #+ATTR_REVEAL: :frag roll-in
+   Macro syntax in clojure is most often written with the =`= escape
+   #+ATTR_REVEAL: :frag roll-in
+   This will create a literal copy of a statement
+   #+ATTR_REVEAL: :frag roll-in
+   #+BEGIN_SRC clojure
+        `(defn foo [x] (+ x x))
+   #+END_SRC
+   #+ATTR_REVEAL: :frag roll-in
+   yields
+   #+ATTR_REVEAL: :frag roll-in
+   #+BEGIN_EXAMPLE
+   (defn foo [x] (+ x x))
+   #+END_EXAMPLE
+   #+ATTR_REVEAL: :frag roll-in
+   The =~= and =@= statements are used to expand clojure vars from the parent scope and inject them in the generated statement.
+*** Built-in macros are idiomatic Clojure
+  :PROPERTIES:
+  :reveal_background_size: 300px
+  :reveal_data_state: blackout
+  :reveal_background: ./images/clojure_logo.png
+  :reveal_background_trans: slide
+  :END:
+    - =->=
+    - =->>=
+    - =defn=
+    - =#()=
+    - =[]=
+    - ={}=
+    - and many many more
+** Now let's look at that code again
+  :PROPERTIES:
+  :reveal_background_size: 300px
+  :reveal_data_state: blackout
+  :reveal_background: ./images/clojure_logo.png
+  :reveal_background_trans: slide
+  :END:
+  #+BEGIN_SRC clojure
+    (map #(Math/toRadians %) (filter odd? (take 100 (range))))
+  #+END_SRC
+
+  #+BEGIN_SRC clojure
+    (let [to-radians #(Math/toRadians %)]
+      (->> (range)
+           (take 100)
+           (filter odd?)
+           (map to-radians)))
+  #+END_SRC
+** So much more
+  :PROPERTIES:
+  :reveal_background_size: 300px
+  :reveal_data_state: blackout
+  :reveal_background: ./images/clojure_logo.png
+  :reveal_background_trans: slide
+  :END:
+   - core.async
+   - core.match
+   - core.logic
+   - core.typed
+
+* Abstraction
+  :PROPERTIES:
+  :reveal_background: ./images/lumped_circuit.svg
+  :reveal_background_trans: slide
+  :END:
+** A foundational principal in Electrical Engineering and as a result Computer Science
+  :PROPERTIES:
+  :reveal_background: ./images/lumped_circuit.svg
+  :reveal_background_trans: slide
+  :END:
+
+   MIT EE 6.002 :: lumped circuit abstraction
+
+# #+REVEAL_HTML: <video src="videos/mit_6.002.mp4"></video>
+   http://www.youtube.com/watch?v=AfQxyVuLeCs
+
+** The purpose of abstraction is not to hide difficult concepts from ourselves
+  :PROPERTIES:
+  :reveal_background: ./images/lumped_circuit.svg
+  :reveal_background_trans: slide
+  :END:
+   The purpose of abstracting difficult concepts is to reduce incidental complexity and create composable components
+* (the) Stevedore
+   :PROPERTIES:
+   :reveal_background: ./images/stevedores_knot.gif
+   :reveal_background_trans: slide
+   :END:
+  ... Does all the dirty work
+
+** Clojure DSL for Shell Scripting Languages
+  #+ATTR_REVEAL: :frag roll-in
+   - Bash (default)
+  #+ATTR_REVEAL: :frag roll-in
+   - MSDos (Windows) Batch (rudimentary support)
+  #+ATTR_REVEAL: :frag roll-in
+   - other targets easily supportable
+
+** Write *Idiomatic* Clojure
+   #+BEGIN_SRC clojure
+     (script
+      (doseq [x @(ls "/home/")]
+        (println @x)))
+   #+END_SRC
+   #+ATTR_REVEAL: :frag roll-in
+   Yield idiomatic Bash
+   #+ATTR_REVEAL: :frag roll-in
+   #+BEGIN_SRC bash
+for x in $(ls /home/); do
+  echo ${x}
+done
+   #+END_SRC
+
+** Here, Abstraction does not absolve you from understanding
+   
+   You must still have a solid understand of Bash principals
+
+   The purpose is to use Clojure paradigms to write code you could otherwise write but would be tedious and overly time consuming to write and maintain.
+
+*** This is the same paradigm that makes Clojure powerful as an alternative to Java
+    or Javascript 
+
+    or many other languages.
+
+** Example
+   #+BEGIN_SRC clojure
+     (defplan package-el
+       "install emacs packages"
+       [user & pkgs]
+       (let [install-pkgs-el 
+             (apply str
+                    (interpose " "
+                               (interpose "--eval"
+                                          (map #(str "\"(if (not (package-installed-p '"
+                                                     (name %)
+                                                     ")) (package-install '"
+                                                     (name %)
+                                                     "))\"")
+                                               pkgs))))]  
+         (exec-script
+          ("sudo" -u ~user "emacs" "-l"
+           ~(str "/home/" user "/.emacs")
+           "--batch" ~install-pkgs-el))))
+   #+END_SRC
+* Pallet
+  :PROPERTIES:
+  :reveal_background: ./images/pallet.png
+  :reveal_background_trans: slide
+  :reveal_data_state: blackout
+  :END:
+  #+ATTR_REVEAL: :frag roll-in
+  *Originally*: Designed to be a deployment and management framework with a focus on commercial hosted Virtual Containers, such as AWS and Rackspace
+  #+ATTR_REVEAL: :frag roll-in
+  *Today*: a rich set of abstractions for describing and realizing infrastructure to support your deployed applications
+  #+ATTR_REVEAL: :frag roll-in
+  *Tommorow*: more specific endpoints for existing abstractions
+
+** Some prep Namespacing
+   #+BEGIN_SRC clojure
+     (ns developtor.groups.develptor
+       "Node defintions for development server"
+       (:require
+        [pallet.core.session :as session]
+        [pallet.compute   :as compute]
+        [pallet.configure :as configure]
+        [pallet.crate.git :as git]
+        [pallet.crate.lein :as lein]
+        [pallet.crate.java :as java]
+        [pallet.crate.lein :as lein]
+        [oheightrcone.crate.emacs :as emacs]
+        [oheightrcone.crate.nodejs :as nodejs])
+       (:use [pallet.crate.automated-admin-user
+              :only [automated-admin-user]]
+             [pallet.action :only [with-action-options]]
+             [pallet.actions :only [packages package-manager package
+                                    symbolic-link
+                                    file exec-script directory remote-file
+                                    exec-checked-script]]
+             [pallet.api :only [plan-fn lift converge group-spec 
+                                server-spec node-spec make-user]]
+             [pallet.crate :only [defplan get-settings]]
+             [clojure.pprint]))
+   #+END_SRC
+** Node Spec
+   A "hardware" definition of a server.  These definitions are primarly used for communicating to the Virtual Container what type of "hardware" we require.  This is also where you specify the "base OS image" to use.
+   #+BEGIN_SRC clojure
+     (def default-node-spec
+       (node-spec
+        :image {:os-family :ubuntu
+                :hardware {:min-cores 1}}))
+   #+END_SRC
+
+** Server Spec
+   Composable definitions of an Operating System level configuration.  What software to install, how to configure it?
+   #+BEGIN_SRC clojure
+     (def
+       ^{:doc "Defines the type of node oheightrcone will run on"}
+       base-server
+       (server-spec
+        :phases
+        {:bootstrap (plan-fn (automated-admin-user))}))
+   #+END_SRC
+   #+REVEAL: split
+   #+BEGIN_SRC clojure
+     (def
+       ^{:doc "Define a server spec for development"}
+       development-server
+       (server-spec
+        :phases
+        {:settings (plan-fn (java/settings {:vendor :openjdk})
+                            (java/settings {:vendor :oracle :version "7"
+                                            :components #{:jdk}
+                                            :instance-id :oracle-7})
+                            (lein/lein-settings {:version "2.3.2"
+                                                 :dir "/usr/local/bin/"}))
+         :configure (plan-fn
+                     (packages :aptitude ["tmux" "curl" "htop" "wget" 
+                                          "build-essential" "texinfo"])
+                     (java/install {})
+                     (lein/install-lein)
+                     (git/install)
+                     (emacs/install)
+                     (emacs/setup-user-emacs)
+                     (emacs/package-el (-> (session/session) session/admin-user :username)
+                                       :cloure-mode :nrepl
+                                       :ack-and-a-half
+                                       :paredit :rainbow-delimiters
+                                       :zencoding-mode :yasnippet))}))
+   #+END_SRC
+** Plans and Phases
+   A =Phase= is defined as part of a server-spec.  You create Phases by composing one or more =Plans= together.  =Phases= and =Plans= are the part of your =Pallet= library which actually installs and configures software and the target Operating System.
+
+** Group Spec
+   Defines a group of instances to be created or acted upon
+   #+BEGIN_SRC clojure
+     (def
+       ^{:doc "Defines a group spec that can be passed to converge or lift."}
+       developtor
+       (group-spec
+        "developtor"
+        :extends [base-server development-server]
+        :node-spec default-node-spec))
+   #+END_SRC
+
+** Converge
+   If working against a Virtual Container, =Converge= is the method for creating and destroying nodes.
+   
+   If you have a service defined as
+   #+BEGIN_SRC clojure
+     ;; this assumes a locally configured ~/.pallet directory
+     (def aws (configure/compute-service :aws))
+   #+END_SRC
+   One method for =Converging= a node
+   #+BEGIN_SRC clojure
+     (converge {developtor 1} :compute aws)
+   #+END_SRC
+** Lift
+   If you have existing nodes you need to work upon, you can use =Lift= to apply a =Phase= from the server-spec
+   #+BEGIN_SRC clojure
+     (def cap (lift oheightrcone
+                    :compute aws
+                    :phase :configure))
+   #+END_SRC
+
+** Crates
+   Pallet's abstraction for creating libraries
+   #+BEGIN_SRC clojure
+         (ns oheightrcone.crate.emacs
+           "Node defintions for oheightrcone"
+           (:require
+            [pallet.core.session :as session]
+            [pallet.crate.automated-admin-user :refer [automated-admin-user]]
+            [pallet.action :refer [with-action-options]]
+            [pallet.actions :refer [packages package-manager
+                                    package symbolic-link
+                                    file exec-script directory remote-file
+                                    exec-checked-script]]
+            [pallet.api :refer [plan-fn lift converge group-spec
+                                server-spec node-spec]]
+            [pallet.crate :refer [defplan get-settings]]
+            [clojure.pprint]))
+         
+         (defplan install "install emacs" []
+           (packages :aptitude ["emacs"]))
+   #+END_SRC
+   #+REVEAL: split
+   #+BEGIN_SRC clojure
+     (defplan setup-user-emacs
+       "setup individual user's emacRs"
+       [& users]
+       (let [users (if (empty? users)
+                     (-> (session/session)
+                         session/admin-user
+                         :username
+                         vector)
+                     users)] 
+         (doseq [user users]      
+           (let [home-dir (str "/home/" user)]
+             (do
+               (directory (str home-dir "/.emacs.d/elpa")
+                          :action :create :recursive true
+                          :owner user :group user :mode "755")
+               (remote-file (str home-dir "/.emacs")
+                            :action :create :force true :mode "755"
+                            :owner user :group user
+                            :local-file "resources/emacs.el")
+               (remote-file (str home-dir "/.emacs.d/elpa/package.el")
+                            :action :create :force true :mode "755"
+                            :owner user :group user
+                            :local-file "resources/package.el")
+               ;; In order register packages properly, run this first
+               (exec-script
+                ("sudo" -u ~user emacs 
+                 "-l" ~(str "/home/" user "/.emacs")
+                 "--batch" "--eval"
+                 ~(str "\"(package-list-packages)\""))))))))
+   #+END_SRC
+   #+REVEAL: split
+   #+BEGIN_SRC clojure
+     (defplan package-el
+       "install emacs packages"
+       [user & pkgs]
+       (let [install-pkgs-el 
+             (apply str
+              (interpose " "
+               (interpose "--eval"
+                (map #(str "\"(if (not (package-installed-p '" (name %)
+                           ")) (package-install '" (name %) "))\"")
+                     pkgs))))]  
+         (exec-script
+          ("sudo" -u ~user
+           emacs "-l" ~(str "/home/" user "/.emacs")
+           "--batch" ~install-pkgs-el))))
+   #+END_SRC
+* Installation and work environment
+** Leiningen: The Clojure build tool
+   - Make sure you have a Java JDK version 6 or later.
+   - Download the script
+     #+BEGIN_EXAMPLE
+       https://raw.github.com/technomancy/leiningen/stable/bin/lein
+     #+END_EXAMPLE
+   - Place it on your $PATH. (~/bin is a good choice if it is on your path.)
+   - Set it to be executable. 
+     #+BEGIN_SRC bash
+     chmod 755 ~/bin/lein
+     #+END_SRC
+** Pallet template
+   #+BEGIN_EXAMPLE
+        lein new pallet developtor
+   #+END_EXAMPLE
+** Configure a provider
+   #+BEGIN_SRC bash
+   lein pallet add-service aws aws-ec2 "your-aws-key" "your-aws-secret-key"
+   #+END_SRC
+** List providers
+   #+BEGIN_SRC bash
+   lein pallet providers
+   #+END_SRC
+* comparison of config manage packages
+  # #+CAPTION: This is a table with lines around and between cells
+  #+ATTR_HTML: :border 2 :rules all :frame border
+  |---------+----------+--------------------+-------------------+--------------------|
+  | package | language | centralized server | default transport | target requirement |
+  |---------+----------+--------------------+-------------------+--------------------|
+  | pallet  | clojure  | no                 | ssh/sftp          | bourne shell       |
+  | ansible | python   | no                 | ssh/sftp          | python 2.4         |
+  | chef    | ruby     | yes                | ruby              | ruby               |
+  | puppet  | ruby     | yes                | ruby              | ruby               |
+  |---------+----------+--------------------+-------------------+--------------------|
+
