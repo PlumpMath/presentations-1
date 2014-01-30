@@ -1,0 +1,960 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>(Pallet: Abstract all the things)</title>
+<meta name="author" content="(Hunter Hutchinson)"/>
+<link rel="stylesheet" href="./reveal.js/css/reveal.min.css"/>
+<link rel="stylesheet" href="./reveal.js/css/theme/default.css" id="theme"/>
+
+<link rel="stylesheet" href="./reveal.js/css/print/pdf.css" type="text/css" media="print"/>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section>
+<h1>Pallet: Abstract all the things</h1>
+<h2>Hunter Hutchinson</h2>
+<h2><a href="mailto:hunter@buzz">hunter@buzz</a></h2>
+<h2></h2></section>
+
+<section>
+<section id="sec-1"  data-background="./images/ten_thousand_feet_nyc.jpg" data-background-transition="slide">
+
+<h2>The 10,000 foot view</h2>
+</section>
+<section id="sec-1-1"  data-state="blackout" data-background="./images/ten_thousand_feet_nyc.jpg" data-background-transition="slide">
+
+<h3>The 10,000 foot view</h3>
+<p>
+Why I chose Pallet:
+</p>
+<ul class="org-ul">
+<li class="fragment roll-in">"full stack developer"
+</li>
+</ul>
+<ul class="org-ul">
+<li class="fragment roll-in">in 2010, I had some Clojure experience &amp; no Ruby experience
+</li>
+</ul>
+<ul class="org-ul">
+<li class="fragment roll-in">in 2010, JClouds was arguably the most mature and robust cross-provider library for accessing commercial Virtual Containers, i.e. AWS &amp; Rackspace
+</li>
+</ul>
+
+</section>
+<section id="sec-1-2"  data-state="blackout" data-background="./images/ten_thousand_feet_nyc.jpg" data-background-transition="slide">
+
+<h3>Pallet:</h3>
+<ul class="org-ul">
+<li class="fragment roll-in">Clojure DSL
+</li>
+</ul>
+<ul class="org-ul">
+<li class="fragment roll-in">JClouds for accessing most commercial Virtual Container providers
+</li>
+</ul>
+<ul class="org-ul">
+<li class="fragment roll-in">No central Server
+</li>
+</ul>
+<ul class="org-ul">
+<li class="fragment roll-in">Default Transport: SSH/SFTP
+</li>
+</ul>
+<ul class="org-ul">
+<li class="fragment roll-in">Default Client Target: Bourne Shell
+</li>
+</ul>
+<ul class="org-ul">
+<li class="fragment roll-in">No client dependencies other than SSH/SFTP and Bourne Shell
+</li>
+</ul>
+</section>
+</section>
+<section>
+<section id="sec-2"  data-state="blackout" data-background="./images/clojure_logo.png" data-background-size="300px" data-background-transition="slide">
+
+<h2>5 minutes with Clojure</h2>
+<p>
+Goal: Understand this
+</p>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(let [to-radians #(Math/toRadians %)]
+  (-&gt;&gt; (range)
+       (take 100)
+       (filter odd?)
+       (map to-radians)))
+</pre>
+</div>
+</section>
+<section id="sec-2-1"  data-state="blackout" data-background="./images/clojure_logo.png" data-background-size="300px" data-background-transition="slide">
+
+<h3>What?!</h3>
+<ul class="org-ul">
+<li>a functional LISP
+</li>
+<li>a Hosted Language (JVM, CLR, Javascript, Scheme, more to come)
+</li>
+<li>immutable by default
+</li>
+<li>STM (software transactional memory), strong on concurrency
+</li>
+<li>lazy collections
+</li>
+</ul>
+
+</section>
+<section id="sec-2-2"  data-state="blackout" data-background="./images/clojure_logo.png" data-background-size="300px" data-background-transition="slide">
+
+<h3>Basic Data types</h3>
+<ul class="org-ul">
+<li>Vars: <code>(def x 'foo)</code>
+</li>
+<li>Symbols:
+<div class="org-src-container">
+
+<pre class="src src-clojure">(symbol foo)
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre class="src src-clojure">'foo
+</pre>
+</div>
+</li>
+<li>Keywords: 
+<div class="org-src-container">
+
+<pre class="src src-clojure">:foo
+</pre>
+</div>
+</li>
+<li>Chars, Strings, Numbers, Rationals:
+<div class="org-src-container">
+
+<pre class="src src-clojure">[\x "foo" 33.3 33/1000]
+</pre>
+</div>
+</li>
+</ul>
+</section>
+<section id="sec-2-3"  data-state="blackout" data-background="./images/clojure_logo.png" data-background-size="300px" data-background-transition="slide">
+
+<h3>Collection types</h3>
+<p>
+All of these are of the <code>Seq</code> type
+</p>
+<ul class="org-ul">
+<li>Vector: <code>[1 3 9 5]</code>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(def x (vector 1 3 9 8 5))
+</pre>
+</div>
+</li>
+<li>Map: <code>{:a "b" :c "d"}</code>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(def x (hash-map :a "b"
+		 :c "d"))
+</pre>
+</div>
+</li>
+<li>List: <code>('a 'b 'c 'd)</code>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(def x (list 'a 'b 'c 'd))
+</pre>
+</div>
+</li>
+</ul>
+
+</section>
+<section id="sec-2-3-1"  data-state="blackout" data-background="./images/clojure_logo.png" data-background-size="300px" data-background-transition="slide">
+
+<h4>Because these collections are all <code>SEQ</code> type</h4>
+<p>
+they share a uniform behavior for these primitives
+</p>
+<ul class="org-ul">
+<li><code>first</code>
+</li>
+<li><code>rest</code>
+</li>
+</ul>
+
+<p>
+AND for these primitive collection functions
+</p>
+<ul class="org-ul">
+<li><code>map</code>
+</li>
+<li><code>filter</code>
+</li>
+<li><code>loop</code> and <code>recur</code>
+</li>
+<li><code>doseq</code>
+</li>
+</ul>
+
+<p>
+And more
+</p>
+</section>
+<section id="sec-2-4"  data-state="blackout" data-background="./images/clojure_logo.png" data-background-size="300px" data-background-transition="slide">
+
+<h3>Functions</h3>
+<p>
+First Class all the way baby
+</p>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(fn [x] (* x x))
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(def square-it (fn [x] (* x x)))
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(defn square-it [x] (* x x))
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(def square-it #(* % %))
+</pre>
+</div>
+</section>
+<section id="sec-2-5"  data-state="blackout" data-background="./images/clojure_logo.png" data-background-size="300px" data-background-transition="slide">
+
+<h3>Lexical Scoping</h3>
+<p>
+Clojure like other Lisps has strong lexical scoping, the main ways to achieve this are:
+</p>
+<p class="fragment roll-in">
+function scope
+</p>
+<div class="org-src-container">
+
+<pre class="fragment roll-in">(def x 'foo)
+(defn yo [j]
+  (def x 'bar)
+  (apply str (interpose ", " (list j x))))
+</pre>
+</div>
+<p class="fragment roll-in">
+Let Binding
+</p>
+<div class="org-src-container">
+
+<pre class="fragment roll-in">(def a "your momma")
+(def is " is so ...")
+(let [is " is a really nice lady"]
+  (str a is))
+</pre>
+</div>
+</section>
+<section id="sec-2-6"  data-state="blackout" data-background="./images/clojure_logo.png" data-background-size="300px" data-background-transition="slide">
+
+<h3>Destructuring</h3>
+<p>
+Clojure supports abstract structural binding, often called destructuring, in let binding lists, fn parameter lists, and any macro that expands into a let or fn. &#x2013; <a href="http://clojure.org/special_forms">http://clojure.org/special_forms</a>
+</p>
+<div class="org-src-container">
+
+<pre class="fragment roll-in">(def point [9 8])
+;; destructure a vector into named local vars
+(let [[x y] point]
+  (format "x: %d by y: %d on the cartesian plane" x y))
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="fragment roll-in">(def nums [1 2 3 4])
+;; destructure a vector into first element and the rest, in a list
+(let [[f &amp; more] nums]
+  (str f " and more: " more))
+</pre>
+</div>
+</section>
+<section id="sec-2-7"  data-state="blackout" data-background="./images/clojure_logo.png" data-background-size="300px" data-background-transition="slide">
+
+<h3>Destructuring Continued</h3>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(def point {:x 5 :y 7})
+;; basic Map destructuring
+(let [{x :x y :y} point]
+  (str "x:" x "y:" y))
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="fragment roll-in">(def point {:x 5 :y 7})
+;; idiomatic map destructuring
+(let [{:keys [x y]} point]
+  (str "x:" x "y:" y))
+</pre>
+</div>
+</section>
+<section id="sec-2-8"  data-state="blackout" data-background="./images/clojure_logo.png" data-background-size="300px" data-background-transition="slide">
+
+<h3>Name your spaces</h3>
+<p>
+Namespaces are used for structuring your code base, they allow you to reference statements outside of your current scope
+</p>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(ns my-one)
+(def xo "no")
+
+(ns my-two)
+(def yo my-one/xo)
+</pre>
+</div>
+
+</section>
+<section id="sec-2-9"  data-state="blackout" data-background="./images/clojure_logo.png" data-background-size="300px" data-background-transition="slide">
+
+<h3>Macros are Magic</h3>
+<p>
+I am not going to cover them other than to say:
+</p>
+<p class="fragment roll-in">
+Macros are code which generates code
+</p>
+<div class="org-src-container">
+
+<pre class="fragment roll-in">(defmacro def-function [&amp; args] `(defn ~@args))
+</pre>
+</div>
+<p class="fragment roll-in">
+Macro syntax in clojure is most often written with the <code>`</code> escape
+</p>
+<p class="fragment roll-in">
+This will create a literal copy of a statement
+</p>
+<div class="org-src-container">
+
+<pre class="fragment roll-in">`(defn foo [x] (+ x x))
+</pre>
+</div>
+<p class="fragment roll-in">
+yields
+</p>
+<pre class="example">
+(defn foo [x] (+ x x))
+</pre>
+<p class="fragment roll-in">
+The <code>~</code> and <code>@</code> statements are used to expand clojure vars from the parent scope and inject them in the generated statement.
+</p>
+</section>
+<section id="sec-2-9-1"  data-state="blackout" data-background="./images/clojure_logo.png" data-background-size="300px" data-background-transition="slide">
+
+<h4>Built-in macros are idiomatic Clojure</h4>
+<ul class="org-ul">
+<li><code>-&gt;</code>
+</li>
+<li><code>-&gt;&gt;</code>
+</li>
+<li><code>defn</code>
+</li>
+<li><code>#()</code>
+</li>
+<li><code>[]</code>
+</li>
+<li><code>{}</code>
+</li>
+<li>and many many more
+</li>
+</ul>
+
+</section>
+<section id="sec-2-10"  data-state="blackout" data-background="./images/clojure_logo.png" data-background-size="300px" data-background-transition="slide">
+
+<h3>Now let's look at that code again</h3>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(map #(Math/toRadians %) (filter odd? (take 100 (range))))
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-clojure">(let [to-radians #(Math/toRadians %)]
+  (-&gt;&gt; (range)
+       (take 100)
+       (filter odd?)
+       (map to-radians)))
+</pre>
+</div>
+
+</section>
+<section id="sec-2-11"  data-state="blackout" data-background="./images/clojure_logo.png" data-background-size="300px" data-background-transition="slide">
+
+<h3>So much more</h3>
+<ul class="org-ul">
+<li>core.async
+</li>
+<li>core.match
+</li>
+<li>core.logic
+</li>
+<li>core.typed
+</li>
+</ul>
+</section>
+</section>
+<section>
+<section id="sec-3"  data-background="./images/lumped_circuit.svg" data-background-transition="slide">
+
+<h2>Abstraction</h2>
+</section>
+<section id="sec-3-1"  data-background="./images/lumped_circuit.svg" data-background-transition="slide">
+
+<h3>A foundational principal in Electrical Engineering and as a result Computer Science</h3>
+
+<p>
+MIT EE 6.002 :: lumped circuit abstraction
+</p>
+
+<p>
+<a href="http://www.youtube.com/watch?v=AfQxyVuLeCs">http://www.youtube.com/watch?v=AfQxyVuLeCs</a>
+</p>
+</section>
+<section id="sec-3-2"  data-background="./images/lumped_circuit.svg" data-background-transition="slide">
+
+<h3>The purpose of abstraction is not to hide difficult concepts from ourselves</h3>
+<p>
+The purpose of abstracting difficult concepts is to reduce incidental complexity and create composable components
+</p>
+</section>
+
+</section>
+<section>
+<section id="sec-4"  data-background="./images/stevedores_knot.gif" data-background-transition="slide">
+
+<h2>(the) Stevedore</h2>
+<p>
+&#x2026; Does all the dirty work
+</p>
+
+</section>
+<section id="sec-4-1" >
+
+<h3>Clojure DSL for Shell Scripting Languages</h3>
+<ul class="org-ul">
+<li class="fragment roll-in">Bash (default)
+</li>
+</ul>
+<ul class="org-ul">
+<li class="fragment roll-in">MSDos (Windows) Batch (rudimentary support)
+</li>
+</ul>
+<ul class="org-ul">
+<li class="fragment roll-in">other targets easily supportable
+</li>
+</ul>
+</section>
+<section id="sec-4-2" >
+
+<h3>Write <b>Idiomatic</b> Clojure</h3>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(script
+ (doseq [x @(ls "/home/")]
+   (println @x)))
+</pre>
+</div>
+<p class="fragment roll-in">
+Yield idiomatic Bash
+</p>
+<div class="org-src-container">
+
+<pre class="fragment roll-in">for x in $(ls /home/); do
+  echo ${x}
+done
+</pre>
+</div>
+</section>
+<section id="sec-4-3" >
+
+<h3>Here, Abstraction does not absolve you from understanding</h3>
+<p>
+You must still have a solid understand of Bash principals
+</p>
+
+<p>
+The purpose is to use Clojure paradigms to write code you could otherwise write but would be tedious and overly time consuming to write and maintain.
+</p>
+
+</section>
+<section id="sec-4-3-1" >
+
+<h4>This is the same paradigm that makes Clojure powerful as an alternative to Java</h4>
+<p>
+or Javascript 
+</p>
+
+<p>
+or many other languages.
+</p>
+</section>
+<section id="sec-4-4" >
+
+<h3>Example</h3>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(defplan package-el
+  "install emacs packages"
+  [user &amp; pkgs]
+  (let [install-pkgs-el 
+	(apply str
+	       (interpose " "
+			  (interpose "--eval"
+				     (map #(str "\"(if (not (package-installed-p '"
+						(name %)
+						")) (package-install '"
+						(name %)
+						"))\"")
+					  pkgs))))]  
+    (exec-script
+     ("sudo" -u ~user "emacs" "-l"
+      ~(str "/home/" user "/.emacs")
+      "--batch" ~install-pkgs-el))))
+</pre>
+</div>
+</section>
+
+</section>
+<section>
+<section id="sec-5"  data-state="blackout" data-background="./images/pallet.png" data-background-transition="slide">
+
+<h2>Pallet</h2>
+<p class="fragment roll-in">
+<b>Originally</b>: Designed to be a deployment and management framework with a focus on commercial hosted Virtual Containers, such as AWS and Rackspace
+</p>
+<p class="fragment roll-in">
+<b>Today</b>: a rich set of abstractions for describing and realizing infrastructure to support your deployed applications
+</p>
+<p class="fragment roll-in">
+<b>Tommorow</b>: more specific endpoints for existing abstractions
+</p>
+
+</section>
+<section id="sec-5-1" >
+
+<h3>Some prep Namespacing</h3>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(ns developtor.groups.develptor
+  "Node defintions for development server"
+  (:require
+   [pallet.core.session :as session]
+   [pallet.compute   :as compute]
+   [pallet.configure :as configure]
+   [pallet.crate.git :as git]
+   [pallet.crate.lein :as lein]
+   [pallet.crate.java :as java]
+   [pallet.crate.lein :as lein]
+   [oheightrcone.crate.emacs :as emacs]
+   [oheightrcone.crate.nodejs :as nodejs])
+  (:use [pallet.crate.automated-admin-user
+	 :only [automated-admin-user]]
+	[pallet.action :only [with-action-options]]
+	[pallet.actions :only [packages package-manager package
+			       symbolic-link
+			       file exec-script directory remote-file
+			       exec-checked-script]]
+	[pallet.api :only [plan-fn lift converge group-spec 
+			   server-spec node-spec make-user]]
+	[pallet.crate :only [defplan get-settings]]
+	[clojure.pprint]))
+</pre>
+</div>
+
+</section>
+<section id="sec-5-2" >
+
+<h3>Node Spec</h3>
+<p>
+A "hardware" definition of a server.  These definitions are primarly used for communicating to the Virtual Container what type of "hardware" we require.  This is also where you specify the "base OS image" to use.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(def default-node-spec
+  (node-spec
+   :image {:os-family :ubuntu
+	   :hardware {:min-cores 1}}))
+</pre>
+</div>
+</section>
+<section id="sec-5-3" >
+
+<h3>Server Spec</h3>
+<p>
+Composable definitions of an Operating System level configuration.  What software to install, how to configure it?
+</p>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(def
+  ^{:doc "Defines the type of node oheightrcone will run on"}
+  base-server
+  (server-spec
+   :phases
+   {:bootstrap (plan-fn (automated-admin-user))}))
+</pre>
+</div>
+</section>
+<section>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(def
+  ^{:doc "Define a server spec for development"}
+  development-server
+  (server-spec
+   :phases
+   {:settings (plan-fn (java/settings {:vendor :openjdk})
+		       (java/settings {:vendor :oracle :version "7"
+				       :components #{:jdk}
+				       :instance-id :oracle-7})
+		       (lein/lein-settings {:version "2.3.2"
+					    :dir "/usr/local/bin/"}))
+    :configure (plan-fn
+		(packages :aptitude ["tmux" "curl" "htop" "wget" 
+				     "build-essential" "texinfo"])
+		(java/install {})
+		(lein/install-lein)
+		(git/install)
+		(emacs/install)
+		(emacs/setup-user-emacs)
+		(emacs/package-el (-&gt; (session/session) session/admin-user :username)
+				  :cloure-mode :nrepl
+				  :ack-and-a-half
+				  :paredit :rainbow-delimiters
+				  :zencoding-mode :yasnippet))}))
+</pre>
+</div>
+
+</section>
+<section id="sec-5-4" >
+
+<h3>Plans and Phases</h3>
+<p>
+A <code>Phase</code> is defined as part of a server-spec.  You create Phases by composing one or more <code>Plans</code> together.  <code>Phases</code> and <code>Plans</code> are the part of your <code>Pallet</code> library which actually installs and configures software and the target Operating System.
+</p>
+</section>
+<section id="sec-5-5" >
+
+<h3>Group Spec</h3>
+<p>
+Defines a group of instances to be created or acted upon
+</p>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(def
+  ^{:doc "Defines a group spec that can be passed to converge or lift."}
+  developtor
+  (group-spec
+   "developtor"
+   :extends [base-server development-server]
+   :node-spec default-node-spec))
+</pre>
+</div>
+</section>
+<section id="sec-5-6" >
+
+<h3>Converge</h3>
+<p>
+If working against a Virtual Container, <code>Converge</code> is the method for creating and destroying nodes.
+</p>
+
+<p>
+If you have a service defined as
+</p>
+<div class="org-src-container">
+
+<pre class="src src-clojure">;; this assumes a locally configured ~/.pallet directory
+(def aws (configure/compute-service :aws))
+</pre>
+</div>
+<p>
+One method for <code>Converging</code> a node
+</p>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(converge {developtor 1} :compute aws)
+</pre>
+</div>
+
+</section>
+<section id="sec-5-7" >
+
+<h3>Lift</h3>
+<p>
+If you have existing nodes you need to work upon, you can use <code>Lift</code> to apply a <code>Phase</code> from the server-spec
+</p>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(def cap (lift oheightrcone
+	       :compute aws
+	       :phase :configure))
+</pre>
+</div>
+</section>
+<section id="sec-5-8" >
+
+<h3>Crates</h3>
+<p>
+Pallet's abstraction for creating libraries
+</p>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(ns oheightrcone.crate.emacs
+  "Node defintions for oheightrcone"
+  (:require
+   [pallet.core.session :as session]
+   [pallet.crate.automated-admin-user :refer [automated-admin-user]]
+   [pallet.action :refer [with-action-options]]
+   [pallet.actions :refer [packages package-manager
+			   package symbolic-link
+			   file exec-script directory remote-file
+			   exec-checked-script]]
+   [pallet.api :refer [plan-fn lift converge group-spec
+		       server-spec node-spec]]
+   [pallet.crate :refer [defplan get-settings]]
+   [clojure.pprint]))
+
+(defplan install "install emacs" []
+  (packages :aptitude ["emacs"]))
+</pre>
+</div>
+</section>
+<section>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(defplan setup-user-emacs
+  "setup individual user's emacRs"
+  [&amp; users]
+  (let [users (if (empty? users)
+		(-&gt; (session/session)
+		    session/admin-user
+		    :username
+		    vector)
+		users)] 
+    (doseq [user users]      
+      (let [home-dir (str "/home/" user)]
+	(do
+	  (directory (str home-dir "/.emacs.d/elpa")
+		     :action :create :recursive true
+		     :owner user :group user :mode "755")
+	  (remote-file (str home-dir "/.emacs")
+		       :action :create :force true :mode "755"
+		       :owner user :group user
+		       :local-file "resources/emacs.el")
+	  (remote-file (str home-dir "/.emacs.d/elpa/package.el")
+		       :action :create :force true :mode "755"
+		       :owner user :group user
+		       :local-file "resources/package.el")
+	  ;; In order register packages properly, run this first
+	  (exec-script
+	   ("sudo" -u ~user emacs 
+	    "-l" ~(str "/home/" user "/.emacs")
+	    "--batch" "--eval"
+	    ~(str "\"(package-list-packages)\""))))))))
+</pre>
+</div>
+</section>
+<section>
+<div class="org-src-container">
+
+<pre class="src src-clojure">(defplan package-el
+  "install emacs packages"
+  [user &amp; pkgs]
+  (let [install-pkgs-el 
+	(apply str
+	 (interpose " "
+	  (interpose "--eval"
+	   (map #(str "\"(if (not (package-installed-p '" (name %)
+		      ")) (package-install '" (name %) "))\"")
+		pkgs))))]  
+    (exec-script
+     ("sudo" -u ~user
+      emacs "-l" ~(str "/home/" user "/.emacs")
+      "--batch" ~install-pkgs-el))))
+</pre>
+</div>
+</section>
+
+</section>
+<section>
+<section id="sec-6" >
+
+<h2>Installation and work environment</h2>
+</section>
+<section id="sec-6-1" >
+
+<h3>Leiningen: The Clojure build tool</h3>
+<ul class="org-ul">
+<li>Make sure you have a Java JDK version 6 or later.
+</li>
+<li>Download the script
+<pre class="example">
+https://raw.github.com/technomancy/leiningen/stable/bin/lein
+</pre>
+</li>
+<li>Place it on your $PATH. (~/bin is a good choice if it is on your path.)
+</li>
+<li>Set it to be executable. 
+<div class="org-src-container">
+
+<pre class="src src-bash">chmod 755 ~/bin/lein
+</pre>
+</div>
+</li>
+</ul>
+
+</section>
+<section id="sec-6-2" >
+
+<h3>Pallet template</h3>
+<pre class="example">
+lein new pallet developtor
+</pre>
+
+</section>
+<section id="sec-6-3" >
+
+<h3>Configure a provider</h3>
+<div class="org-src-container">
+
+<pre class="src src-bash">lein pallet add-service aws aws-ec2 "your-aws-key" "your-aws-secret-key"
+</pre>
+</div>
+
+</section>
+<section id="sec-6-4" >
+
+<h3>List providers</h3>
+<div class="org-src-container">
+
+<pre class="src src-bash">lein pallet providers
+</pre>
+</div>
+</section>
+
+</section>
+<section>
+<section id="sec-7" >
+
+<h2>comparison of config manage packages</h2>
+<table border="2" cellspacing="0" cellpadding="6" rules="all" frame="border">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">package</th>
+<th scope="col" class="left">language</th>
+<th scope="col" class="left">centralized server</th>
+<th scope="col" class="left">default transport</th>
+<th scope="col" class="left">target requirement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">pallet</td>
+<td class="left">clojure</td>
+<td class="left">no</td>
+<td class="left">ssh/sftp</td>
+<td class="left">bourne shell</td>
+</tr>
+
+<tr>
+<td class="left">ansible</td>
+<td class="left">python</td>
+<td class="left">no</td>
+<td class="left">ssh/sftp</td>
+<td class="left">python 2.4</td>
+</tr>
+
+<tr>
+<td class="left">chef</td>
+<td class="left">ruby</td>
+<td class="left">yes</td>
+<td class="left">ruby</td>
+<td class="left">ruby</td>
+</tr>
+
+<tr>
+<td class="left">puppet</td>
+<td class="left">ruby</td>
+<td class="left">yes</td>
+<td class="left">ruby</td>
+<td class="left">ruby</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</div>
+</div>
+<script src="./reveal.js/lib/js/head.min.js"></script>
+<script src="./reveal.js/js/reveal.min.js"></script>
+<script>
+
+        		// Full list of configuration options available here:
+        		// https://github.com/hakimel/reveal.js#configuration
+        		Reveal.initialize({
+        			controls: true,
+        			progress: true,
+        			history: false,
+        			center: true,
+        			rollingLinks: false,
+        			keyboard: true,
+        			overview: true,
+        			 // slide width
+        			 // slide height
+        			 // slide margin
+        			 // slide minimum scaling factor
+        			 // slide maximum scaling factor
+
+
+        			theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+        			transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+        			transitionSpeed: 'default',
+
+        			// Optional libraries used to extend on reveal.js
+        			dependencies: [
+        				{ src: './reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } }
+        				,{ src: './reveal.js/plugin/markdown/showdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } }
+        				,{ src: './reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } }
+        				,{ src: './reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+        				,{ src: './reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } }
+        				,{ src: './reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+        				// { src: './reveal.js/plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
+        				// { src: './reveal.js/plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+         				
+        			]
+        		});
+</script>
+</body>
+</html>
