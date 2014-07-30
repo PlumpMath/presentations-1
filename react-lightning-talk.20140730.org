@@ -1,0 +1,310 @@
+#+title: React.js
+#+author: Hunter Hutchinson
+#+email: hunter.hutchinson@gmail.com
+#+options: toc:nil
+#+options: num:0
+
+* what
+** The `V` in `MVC`
+   ReactJS is a client side javascript library that *only* wants to be the *view*
+
+* what you heard
+** Virtual DOM
+   Yes, ReactJS actually re-renders the 
+** Why?
+   #+BEGIN_SRC javascript
+   document.body.innerHTML = "<div id='jam'>Strawberry</div>"
+   #+END_SRC
+   *really is faster than*
+   #+BEGIN_SRC javascript
+   document.getElementById('jam').html("Strawberry");
+   #+END_SRC
+** but seriously, that's not the point
+* Reality
+** so what *is* the point?
+**** State
+**** Encapsulation
+** the real *reality*
+   #+BEGIN_SRC javascript
+          /** @jsx React.DOM */
+          
+          var React = require('react');
+          
+          module.exports = React.createClass({
+              handleClick: function() {
+                  console.log("clicky clikc");
+                  this.navigate("/login");
+              },
+              render: function() {
+                  var classes = this.props.className || "card col-xs-18 col-sm-6 col-md-4";
+                  return (
+     <div className={classes}>
+       <div className="thumbnail">
+         <div className="caption">
+           {/* in-card titlebar */}    
+           <div>{this.props.title}</div>
+           {/* body content */}
+           <div>{this.props.children}</div>
+           {/* bottom bar composed of links */}
+           <div>{this.props.footer}</div>
+         </div>
+       </div>
+     </div>
+                  );
+              }
+          });
+          
+   #+END_SRC
+* The Elephant in the Room
+** JSX
+   A XML syntax that is for all intents and purposes HTML
+** Why?
+   Contextulization.  Seeing your layout represented as HTML makes a difference
+** Believe me
+   you will prefer this
+   #+BEGIN_SRC javascript
+     render: function() {
+         var classes = this.props.className || "card col-xs-18 col-sm-6 col-md-4";
+         return (
+       <div className={classes}>
+         <div className="thumbnail">
+           <div className="caption">
+             {/* in-card titlebar */}    
+             <div>{this.props.title}</div>
+             {/* body content */}
+             <div>{this.props.children}</div>
+             {/* bottom bar composed of links */}
+             <div>{this.props.footer}</div>
+           </div>
+         </div>
+       </div>
+         );
+     }
+          
+   #+END_SRC
+   to this
+   #+BEGIN_SRC javascript
+     render: function() {
+         var classes = this.props.className || "card col-xs-18 col-sm-6 col-md-4";
+         return React.DOM.div({className: classes},
+                              React.DOM.div({className: "thumbnail"},
+                                            React.DOM.div({className: "caption"},
+                                                          React.DOM.div({}, this.props.title),
+                                                          React.DOM.div({}, this.props.children),
+                                                          React.DOM.div({}, this.props.footer)
+                                                         )));
+     }
+     
+   #+END_SRC
+* Componetize!
+** CommonJS
+   http://www.commonjs.org/
+
+   A standard for modularized Javascript.
+
+   The most well known implementation is NPM, The Node Package Manager
+   https://www.npmjs.org/
+** Browserify
+   http://browserify.org/
+
+   Simply, an in browser implementation of NPM
+*** 
+** 
+* Build it!
+** Barebones NPM
+**** use standard package.json
+     #+BEGIN_SRC javascript
+       {
+           "name": "test-ui",
+           "description": "react.js based test ui",
+           "version": "0.0.1",
+           "devDependencies": {
+               "react": "^0.10.0",
+               "browserify": "~> 4.1",
+               "reactify": "^0.13.1",
+               "react-nested-router": "^0.2.1"
+           },
+           "dependencies": {
+               "react": "^0.10.0",
+               "react-bootstrap": "^0.10.2",
+               "react-async": "^0.9.2",
+               "d3": "^3.4.8",
+               "superagent": "^0.18.0",
+               "q": "^1.0.1",
+               "superagent-q": "0.0.1",
+               "underscore": "^1.6.0",
+               "reactify": "^0.13.1"
+           },
+           "author": "Hunter Hutchinson",
+           "browserify": {
+               "transform": [
+                   "reactify"
+               ]
+           }
+       }
+       
+     #+END_SRC
+     build it
+     #+BEGIN_EXAMPLE
+     browserify main.js > bundle.js
+     #+END_EXAMPLE
+
+     *or* if you want to build multiple interdependent components
+     #+BEGIN_EXAMPLE
+       $ browserify -r ./robot > static/common.js
+       $ browserify -x ./robot.js beep.js > static/beep.js
+       $ browserify -x ./robot.js boop.js > static/boop.js
+     #+END_EXAMPLE
+** Grunt
+   like Make for NodeJS
+*** the package.json example
+    #+BEGIN_SRC javascript
+      {
+          "name": "verve-ui",
+          "description": "react.js based verve ui",
+          "version": "0.0.1",
+          "devDependencies": {
+              "react": "^0.10.0",
+              "react-bootstrap": "^0.10.2"
+          },
+          "dependencies": {
+              "grunt-react": "^0.8.2",
+              "grunt-browserify": "^2.1.0",
+              "grunt-contrib-watch": "^0.6.1",
+              "react-async": "^0.9.2",
+              "react-router-component": "^0.18.3",
+              "d3": "^3.4.8",
+              "superagent": "^0.18.0",
+              "q": "^1.0.1",
+              "superagent-q": "0.0.1",
+              "underscore": "^1.6.0"
+          }
+      }
+      
+    #+END_SRC
+*** the Gruntfile.js
+    #+BEGIN_SRC javascript
+      module.exports = function(grunt) {
+          grunt.initConfig({
+              pkg: grunt.file.readJSON('package.json'),
+              watch: {
+                  react: {
+                      files: ['js/react_components/**/*.jsx', 'js/react_components/**/*.js'],
+                      tasks: ['browserify']
+                  }
+              },
+              browserify: {
+                  options: {
+                      transform: [require('grunt-react').browserify]
+                  },
+                  client: {
+                      src: ['js/react_components/**/*.jsx', 'js/react_components/**/*.js'],
+                      dest: 'js/app.js'
+                  }
+              }
+          });
+      
+          grunt.loadNpmTasks('grunt-browserify');
+          grunt.loadNpmTasks('grunt-contrib-watch');
+      
+          grunt.registerTask('default', [
+              'browserify'
+          ]);
+      };
+      
+    #+END_SRC
+*** build it
+    #+BEGIN_EXAMPLE
+    grunt;
+    grunt watch
+    #+END_EXAMPLE
+* rails solutions
+
+** react-rails
+   https://github.com/reactjs/react-rails
+*** pros
+
+**** automatic compilation integrated into rails build
+     no external node or grunt build processes
+
+**** simple GEM include
+     #+BEGIN_SRC ruby
+       gem 'react-rails', '~> 1.0.0'
+     #+END_SRC
+     #+BEGIN_EXAMPLE
+       bundle install
+     #+END_EXAMPLE
+
+**** asset pipeline
+     application.js
+     #+BEGIN_SRC javascript
+       // app/assets/application.js
+       
+       //= require turbolinks
+       //= require react
+       //= require react_ujs
+     #+END_SRC
+
+**** JSX support
+     Just name the file `.js.jsx` and include the JSX docblock
+
+*** cons
+
+**** No Mixin support
+
+**** no commonjs support
+     
+** browserify-rails
+   https://github.com/hsume2/browserify-rails
+
+*** pros
+**** automatic compilation integrated into rails build
+     no external node or grunt build processes
+
+**** simple GEM include
+     #+BEGIN_SRC ruby
+       gem "browserify-rails", "~> 0.3"
+     #+END_SRC
+     #+BEGIN_EXAMPLE
+       bundle install
+     #+END_EXAMPLE
+**** use standard package.json
+     PROJECT_ROOT/package.json
+     #+BEGIN_SRC javascript
+       {
+           "name": "test-ui",
+           "description": "react.js based test ui",
+           "version": "0.0.1",
+           "devDependencies": {
+               "react": "^0.10.0",
+               "browserify": "~> 4.1",
+               "reactify": "^0.13.1",
+               "react-nested-router": "^0.2.1"
+           },
+           "dependencies": {
+               "react": "^0.10.0",
+               "react-bootstrap": "^0.10.2",
+               "react-async": "^0.9.2",
+               "d3": "^3.4.8",
+               "superagent": "^0.18.0",
+               "q": "^1.0.1",
+               "superagent-q": "0.0.1",
+               "underscore": "^1.6.0",
+               "reactify": "^0.13.1"
+           },
+           "author": "Hunter Hutchinson",
+           "browserify": {
+               "transform": [
+                   "reactify"
+               ]
+           }
+       }
+       
+     #+END_SRC
+
+*** cons
+
+**** not mature
+     not a large community either
+**** issues with production deployment
+     asset precompilation & Heroku
